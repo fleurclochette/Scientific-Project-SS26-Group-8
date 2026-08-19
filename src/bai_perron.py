@@ -63,3 +63,41 @@ class BaiPerron:
         )
 
         return rss
+        
+def _build_rss_matrix(self, y):
+    """
+    Build a matrix containing the RSS for every
+    admissible segment of the time series.
+
+    Parameters
+    ----------
+    y : array-like
+        Time series.
+
+    Returns
+    -------
+    numpy.ndarray
+        Matrix containing segment RSS values.
+    """
+
+    y = np.asarray(y)
+    n = len(y)
+
+    # Initialize matrix with infinity.
+    # Infinity means that the segment is not admissible.
+    rss_matrix = np.full((n, n), np.inf)
+
+    # Calculate RSS for every segment that satisfies
+    # the minimum segment length.
+    for start in range(n):
+        for end in range(
+            start + self.min_segment,
+            n + 1
+        ):
+            rss_matrix[start, end - 1] = self._segment_rss(
+                y,
+                start,
+                end
+            )
+
+    return rss_matrix
