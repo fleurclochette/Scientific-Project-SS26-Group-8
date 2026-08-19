@@ -172,3 +172,52 @@ class BaiPerron:
             "costs": costs,
             "breakpoints": breakpoints
         }
+    def _get_breakpoints(self, dp_results, n_breaks, n):
+        """
+        Reconstruct the optimal breakpoint locations
+        from the dynamic programming results.
+
+        Parameters
+        ----------
+        dp_results : dict
+            Results returned by _dynamic_programming().
+
+        n_breaks : int
+            Number of structural breaks.
+
+        n : int
+            Number of observations.
+
+        Returns
+        -------
+        list
+            Estimated breakpoint locations.
+        """
+
+        breakpoints = dp_results["breakpoints"]
+
+        # Number of regimes equals number of breaks + 1
+        regimes = n_breaks + 1
+
+        current_end = n - 1
+
+        estimated_breakpoints = []
+
+        # Work backwards through the dynamic programming table
+        for regime in range(regimes, 1, -1):
+
+            previous_end = breakpoints[
+                (regime, current_end)
+            ]
+
+            estimated_breakpoints.append(
+                previous_end + 1
+            )
+
+            current_end = previous_end
+
+        # Reverse because we reconstructed backwards
+        estimated_breakpoints.reverse()
+
+        return estimated_breakpoints
+        
