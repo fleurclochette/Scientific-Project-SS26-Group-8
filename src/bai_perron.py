@@ -8,3 +8,58 @@ series of the S&P 500.
 
 import numpy as np
 import pandas as pd
+
+class BaiPerron:
+    """
+    Custom implementation of the Bai-Perron
+    multiple structural breakpoint methodology.
+    """
+
+    def __init__(self, max_breaks=6, min_segment=60):
+        """
+        Initialize the Bai-Perron model.
+
+        Parameters
+        ----------
+        max_breaks : int
+            Maximum number of structural breaks to consider.
+
+        min_segment : int
+            Minimum number of observations allowed
+            in each regime.
+        """
+
+        self.max_breaks = max_breaks
+        self.min_segment = min_segment
+
+    def _segment_rss(self, y, start, end):
+        """
+        Calculate the residual sum of squares (RSS)
+        for one segment of the time series.
+
+        Parameters
+        ----------
+        y : array-like
+            Time series.
+
+        start : int
+            Starting observation index.
+
+        end : int
+            Ending observation index.
+
+        Returns
+        -------
+        float
+            Residual sum of squares for the segment.
+        """
+
+        segment = np.asarray(y[start:end])
+
+        segment_mean = np.mean(segment)
+
+        rss = np.sum(
+            (segment - segment_mean) ** 2
+        )
+
+        return rss
