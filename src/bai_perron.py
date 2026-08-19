@@ -87,3 +87,88 @@ class BaiPerron:
                 )
 
         return rss_matrix
+        
+    def _dynamic_programming(self, y):
+        """
+        Find optimal structural breakpoints using
+        dynamic programming.
+
+        Parameters
+        ----------
+        y : array-like
+            Time series.
+
+        Returns
+        -------
+        dict
+            Optimal breakpoints and total RSS for
+            each possible number of breaks.
+        """
+
+        y = np.asarray(y)
+        n = len(y)
+
+        # Build the RSS matrix
+        rss_matrix = self._build_rss_matrix(y)
+
+        # Maximum number of regimes is maximum breaks + 1
+        max_regimes = self.max_breaks + 1
+
+        # Store minimum RSS for each number of regimes
+        costs = np.full(
+            (max_regimes + 1, n),
+            np.inf
+        )
+
+        # Store breakpoint locations
+        breakpoints = {}
+
+        # One regime: entire series
+        costs[1, :] = rss_matrix[0, :]
+
+        # Dynamic programming
+        for regimes in range(2, max_regimes + 1):
+
+            for end in range(
+                regimes * self.min_segment - 1,
+                n
+            ):
+
+                best_cost = np.inf
+                best_break = None
+
+                # Possible location of the previous breakpoint
+                for previous_end in range(
+                    (regimes - 1) * self.min_segment - 1,
+                    end - self.min_segment + 1
+                ):
+
+                    previous_cost = costs[
+                        regimes - 1,
+                        previous_end
+                    ]
+
+                    current_cost = rss_matrix[
+                        previous_end + 1,
+                        end
+                    ]
+
+                    total_cost = (
+                        previous_cost +
+                        current_cost
+                    )
+
+                    if total_cost < best_cost:
+                        best_cost = total_cost
+                        best_break = previous_end
+
+                costs[regimes, end] = best_cost
+
+                breakpoints[
+                    (regimes, end)
+                ] = best_break
+
+        return {
+            "costs": costs,
+            "breakpoints": breakpoints
+        }
