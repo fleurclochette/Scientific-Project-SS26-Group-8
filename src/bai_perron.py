@@ -220,4 +220,38 @@ class BaiPerron:
         estimated_breakpoints.reverse()
 
         return estimated_breakpoints
-        
+    def _calculate_bic(self, rss, n, n_breaks):
+        """
+        Calculate the Bayesian Information Criterion (BIC)
+        for a given number of structural breaks.
+
+        Parameters
+        ----------
+        rss : float
+            Total residual sum of squares.
+
+        n : int
+            Number of observations.
+
+        n_breaks : int
+            Number of structural breaks.
+
+        Returns
+        -------
+        float
+            BIC value.
+        """
+
+        # Number of regimes
+        n_regimes = n_breaks + 1
+
+        # For an intercept-only model, each regime
+        # has one estimated mean parameter.
+        k = n_regimes
+
+        bic = (
+            n * np.log(rss / n)
+            + k * np.log(n)
+        )
+
+        return bic     
