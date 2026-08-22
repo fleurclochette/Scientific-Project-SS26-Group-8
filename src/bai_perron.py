@@ -372,40 +372,41 @@ class BaiPerron:
             best_split_rss,
             rss_reduction
         )
+        
     def _supf_statistic(
         self,
         start,
         end,
         break_idx
     ):
-    """
-    Compute a supF-style statistic for testing one additional
-    structural break inside an existing segment.
+        """
+        Compute a supF-style statistic for testing one additional
+        structural break inside an existing segment.
 
-    Parameters
-    ----------
-    start : int
-        Inclusive start index.
+        Parameters
+        ----------
+        start : int
+            Inclusive start index.
 
-    end : int
-        Exclusive end index.
+        end : int
+            Exclusive end index.
 
-    break_idx : int
-        Candidate breakpoint location.
+        break_idx : int
+            Candidate breakpoint location.
 
-    Returns
-    -------
-    float
-        F-style test statistic.
-    """
+        Returns
+        -------
+        float
+            F-style test statistic.
+        """
 
-    # RSS without an additional break
+        # RSS without an additional break
         rss_restricted = self._segment_rss(
             start,
             end
         )
 
-    # RSS after splitting the segment at break_idx
+        # RSS after splitting the segment at break_idx
         rss_left = self._segment_rss(
             start,
             break_idx
@@ -420,15 +421,13 @@ class BaiPerron:
             rss_left + rss_right
         )
 
-    # Number of observations in the current segment
+        # Number of observations in the current segment
         n_segment = end - start
 
-    # Restricted model:
-    # one mean parameter
+        # Restricted model: one mean parameter
         k_restricted = 1
 
-    # Unrestricted model:
-    # two regime means
+        # Unrestricted model: two regime mean parameters
         k_unrestricted = 2
 
         numerator_df = (
