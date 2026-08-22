@@ -32,56 +32,62 @@ class BaiPerron:
         self.max_breaks = max_breaks
         self.min_segment = min_segment
 
-    def _segment_rss(self, y, start, end):
+    def _segment_rss(self, start, end):
         """
-        Calculate the residual sum of squares (RSS)
-        for one segment of the time series.
-
-        Parameters
-        ----------
-        y : array-like
-            Time series.
-
-        start : int
-            Starting observation index.
-
-        end : int
-            Ending observation index.
-
-        Returns
-        -------
-        float
-            Residual sum of squares for the segment.
+        Calculate RSS for the segment y[start:end]
+        using cumulative sums.
         """
 
-        segment = np.asarray(y[start:end])
+        n_segment = end - start
 
-        segment_mean = np.mean(segment)
+        if n_segment <= 0:
+            return np.inf
 
-        rss = np.sum(
-            (segment - segment_mean) ** 2
+        segment_sum = (
+            self._cum_sum[end]
+            - self._cum_sum[start]
+        )
+
+        segment_sq_sum = (
+            self._cum_sq_sum[end]
+            - self._cum_sq_sum[start]
+        )
+
+        rss = (
+            segment_sq_sum
+            - (segment_sum ** 2) / n_segment
         )
 
         return rss
-        
+
     def _build_rss_matrix(self, y):
         """
-        Build a matrix containing the RSS for every
-        admissible segment of the time series.
+        Build the RSS matrix for every admissible segment.
         """
 
-        y = np.asarray(y)
+        y = np.asarray(y, dtype=float)
         n = len(y)
+        self._prepare_cumulative_sums(y)
 
-        rss_matrix = np.full((n, n), np.inf)
+        rss_matrix = np.full(
+            (n, n),
+            np.inf
+        )
 
         for start in range(n):
+            minimum_end = (
+                start
+                + self.min_segment
+            )
+
             for end in range(
-                start + self.min_segment,
+                minimum_end,
                 n + 1
             ):
-                rss_matrix[start, end - 1] = self._segment_rss(
-                    y,
+                rss_matrix[
+                    start,
+                    end - 1
+                ] = self._segment_rss(
                     start,
                     end
                 )
@@ -220,6 +226,7 @@ class BaiPerron:
         estimated_breakpoints.reverse()
 
         return estimated_breakpoints
+        
     def _calculate_bic(self, rss, n, n_breaks):
         """
         Calculate the Bayesian Information Criterion (BIC)
@@ -254,4 +261,24 @@ class BaiPerron:
             + k * np.log(n)
         )
 
-        return bic     
+        return bic    
+        
+    def _prepare_cumulative_sums(self, y):
+    """
+    Precompute cumulative sums and cumulative squared sums.
+
+    This allows the RSS of any segment to be calculated
+    efficiently without repeatedly slicing the full series.
+    """
+
+    y = np.asarray(y, dtype=float)
+
+    self._cum_sum = np.concatenate([
+        [0.0],
+        np.cumsum(y)
+    ])
+
+    self._cum_sq_sum = np.concatenate([
+        [0.0],
+        np.cumsum(y ** 2)
+    ])
