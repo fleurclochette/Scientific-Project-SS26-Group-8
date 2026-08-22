@@ -262,23 +262,20 @@ class BaiPerron:
         )
 
         return bic    
-        
+
     def _prepare_cumulative_sums(self, y):
-    """
-    Precompute cumulative sums and cumulative squared sums.
+        """
+        Precompute cumulative sums and cumulative squared sums.
+        """
 
-    This allows the RSS of any segment to be calculated
-    efficiently without repeatedly slicing the full series.
-    """
+        y = np.asarray(y, dtype=float)
 
-    y = np.asarray(y, dtype=float)
+        self._cum_sum = np.concatenate([
+            [0.0],
+            np.cumsum(y)
+        ])
 
-    self._cum_sum = np.concatenate([
-        [0.0],
-        np.cumsum(y)
-    ])
-
-    self._cum_sq_sum = np.concatenate([
-        [0.0],
-        np.cumsum(y ** 2)
-    ])
+        self._cum_sq_sum = np.concatenate([
+            [0.0],
+            np.cumsum(y ** 2)
+        ])
