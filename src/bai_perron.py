@@ -628,3 +628,144 @@ class BaiPerron:
         )
 
         return critical_value
+
+    def sequential_break_detection(
+        self,
+        y,
+        n_simulations=500,
+        alpha=0.05,
+        random_state=42
+    ):
+        """
+        Sequentially identify statistically significant
+        structural breaks.
+
+        The strongest candidate breakpoint is identified
+        within the current segmentation and evaluated using
+        a Monte Carlo calibrated supF statistic.
+
+        The procedure continues until no additional
+        statistically significant break is detected or
+        max_breaks is reached.
+        """
+
+        y = np.asarray(
+            y,
+            dtype=float
+        )
+
+        # Prepare cumulative sums for the complete series
+        self._prepare_cumulative_sums(y)
+
+        n = len(y)
+
+        # Begin with no structural breaks
+        breakpoints = []
+
+        iteration = 0
+
+        while len(breakpoints) < self.max_breaks:
+
+            iteration += 1
+
+            # Current segmentation
+            boundaries = (
+                [0]
+                + sorted(breakpoints)
+                + [n]
+            )
+
+            candidates = []
+
+            # Search each existing segment
+            for j in range(
+                len(boundaries) - 1
+            ):
+
+                start = boundaries[j]
+                end = boundaries[j + 1]
+
+                # A segment needs enough observations
+                # to create two valid subsegments.
+                if (
+                    end - start
+                    < 2 * self.min_segment
+                ):
+                    continue
+
+                result = (
+                    self._supf_test_segment(
+                        start,
+                        end
+                    )
+                )
+
+                if result["BestBreak"] is None:
+                    continue
+
+                candidates.append({
+                    "Start": start,
+                    "End": end,
+                    "BestBreak":
+                        result["BestBreak"],
+                    "SupF":
+                        result["SupF"]
+                })
+
+            # Stop if no segment can be split
+            if len(candidates) == 0:
+                break
+
+            # Select the strongest candidate
+            best_candidate = max(
+                candidates,
+                key=lambda x: x["SupF"]
+            )
+
+            start = best_candidate["Start"]
+            end = best_candidate["End"]
+
+            candidate_break = (
+                best_candidate["BestBreak"]
+            )
+
+            observed_supf = (
+                best_candidate["SupF"]
+            )
+
+            # Monte Carlo critical value
+            critical_value = (
+                self._supf_monte_carlo_critical_value(
+                    start,
+                    end,
+                    n_simulations=n_simulations,
+                    alpha=alpha,
+                    random_state=(
+                        random_state
+                        + iteration
+                    )
+                )
+            )
+
+            print(
+                f"Iteration {iteration}: "
+                f"candidate={candidate_break}, "
+                f"supF={observed_supf:.4f}, "
+                f"critical={critical_value:.4f}"
+            )
+
+            # Retain statistically significant break
+            if observed_supf > critical_value:
+
+                breakpoints.append(
+                    candidate_break
+                )
+
+                breakpoints.sort()
+
+            else:
+
+                # Strongest candidate is not significant
+                break
+
+        return breakpoints
