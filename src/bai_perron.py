@@ -459,3 +459,67 @@ class BaiPerron:
         f_stat = numerator / denominator
 
         return f_stat
+
+    def _supf_test_segment(
+        self,
+        start,
+        end
+    ):
+        """
+        Search all admissible breakpoint locations within a segment
+        and return the maximum F-style statistic.
+
+        Parameters
+        ----------
+        start : int
+            Inclusive start index.
+
+        end : int
+            Exclusive end index.
+
+        Returns
+        -------
+        dict
+            Best breakpoint location and corresponding supF statistic.
+        """
+
+        first_candidate = (
+            start + self.min_segment
+        )
+
+        last_candidate = (
+            end - self.min_segment
+        )
+
+        # Segment too short to contain another admissible break
+        if first_candidate > last_candidate:
+            return {
+                "BestBreak": None,
+                "SupF": np.nan
+            }
+
+        best_break = None
+        best_stat = -np.inf
+
+        for break_idx in range(
+            first_candidate,
+            last_candidate + 1
+        ):
+
+            f_stat = self._supf_statistic(
+                start,
+                end,
+                break_idx
+            )
+
+            if np.isnan(f_stat):
+                continue
+
+            if f_stat > best_stat:
+                best_stat = f_stat
+                best_break = break_idx
+
+        return {
+            "BestBreak": best_break,
+            "SupF": best_stat
+        }
