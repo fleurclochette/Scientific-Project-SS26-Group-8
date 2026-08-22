@@ -270,6 +270,10 @@ class BaiPerron:
 
         y = np.asarray(y, dtype=float)
 
+        
+        # Store the original series
+        self._y = y
+
         self._cum_sum = np.concatenate([
             [0.0],
             np.cumsum(y)
@@ -769,3 +773,138 @@ class BaiPerron:
                 break
 
         return breakpoints
+
+    def _supf_block_bootstrap_critical_value(
+        self,
+        start,
+        end,
+        n_simulations=500,
+        alpha=0.05,
+        block_size=20,
+        random_state=42
+    ):
+        """
+        Estimate an empirical critical value for the supF statistic
+        using a moving-block bootstrap.
+
+        Consecutive observations are resampled in blocks so that
+        short-run serial dependence in the volatility series is
+        approximately preserved.
+
+        Parameters
+        ----------
+        start : int
+            Inclusive segment start index.
+
+        end : int
+            Exclusive segment end index.
+
+        n_simulations : int
+            Number of bootstrap replications.
+
+        alpha : float
+            Significance level.
+
+        block_size : int
+            Number of consecutive observations in each bootstrap block.
+
+        random_state : int
+            Random seed for reproducibility.
+
+        Returns
+        -------
+        float
+            Empirical supF critical value.
+        """
+
+        rng = np.random.default_rng(
+            random_state
+        )
+
+        # Recover the original observations used by the model
+        segment = self._y[
+            start:end
+        ]
+
+        n_segment = len(segment)
+
+        if block_size >= n_segment:
+            raise ValueError(
+                "block_size must be smaller than the segment length."
+            )
+
+        # Center the series to impose a constant-mean null
+        centered_segment = (
+            segment - np.mean(segment)
+        )
+
+        # Construct all overlapping moving blocks
+        blocks = [
+            centered_segment[
+                i:i + block_size
+            ]
+            for i in range(
+                0,
+                n_segment - block_size + 1
+            )
+        ]
+
+        simulated_supf = []
+
+        for _ in range(
+            n_simulations
+        ):
+
+            bootstrap_values = []
+
+            # Draw complete blocks until enough observations exist
+            while len(
+                bootstrap_values
+            ) < n_segment:
+
+                block_index = rng.integers(
+                    0,
+                    len(blocks)
+                )
+
+                bootstrap_values.extend(
+                    blocks[block_index]
+                )
+
+            # Trim to original segment length
+            bootstrap_series = np.asarray(
+                bootstrap_values[
+                    :n_segment
+                ],
+                dtype=float
+            )
+
+            temp_model = BaiPerron(
+                max_breaks=self.max_breaks,
+                min_segment=self.min_segment
+            )
+
+            temp_model._prepare_cumulative_sums(
+                bootstrap_series
+            )
+
+            result = (
+                temp_model._supf_test_segment(
+                    0,
+                    n_segment
+                )
+            )
+
+            if not np.isnan(
+                result["SupF"]
+            ):
+                simulated_supf.append(
+                    result["SupF"]
+                )
+
+        critical_value = np.quantile(
+            simulated_supf,
+            1 - alpha
+        )
+
+        return critical_value
