@@ -523,3 +523,108 @@ class BaiPerron:
             "BestBreak": best_break,
             "SupF": best_stat
         }
+
+    def _supf_monte_carlo_critical_value(
+        self,
+        start,
+        end,
+        n_simulations=1000,
+        alpha=0.05,
+        random_state=42
+    ):
+        """
+        Estimate an empirical critical value for the supF statistic
+        under the null hypothesis of no structural break.
+
+        Parameters
+        ----------
+        start : int
+            Inclusive segment start.
+
+        end : int
+            Exclusive segment end.
+
+        n_simulations : int
+            Number of Monte Carlo simulations.
+
+        alpha : float
+            Significance level.
+
+        random_state : int
+            Random seed.
+
+        Returns
+        -------
+        float
+            Empirical supF critical value.
+        """
+
+        rng = np.random.default_rng(
+            random_state
+        )
+
+        n_segment = end - start
+
+        segment_sum = (
+            self._cum_sum[end]
+            - self._cum_sum[start]
+        )
+
+        segment_sq_sum = (
+            self._cum_sq_sum[end]
+            - self._cum_sq_sum[start]
+        )
+
+        segment_mean = (
+            segment_sum
+            / n_segment
+        )
+
+        segment_variance = (
+            segment_sq_sum
+            - (segment_sum ** 2)
+            / n_segment
+        ) / (n_segment - 1)
+
+        segment_sd = np.sqrt(
+            segment_variance
+        )
+
+        simulated_supf = []
+
+        for _ in range(
+            n_simulations
+        ):
+
+            simulated = rng.normal(
+                loc=segment_mean,
+                scale=segment_sd,
+                size=n_segment
+            )
+
+            temp_model = BaiPerron(
+                max_breaks=self.max_breaks,
+                min_segment=self.min_segment
+            )
+
+            temp_model._prepare_cumulative_sums(
+                simulated
+            )
+
+            result = (
+                temp_model._supf_test_segment(
+                    0,
+                    n_segment
+                )
+            )
+
+            simulated_supf.append(
+                result["SupF"]
+            )
+
+        critical_value = np.quantile(
+            simulated_supf,
+            1 - alpha
+        )
+
+        return critical_value
