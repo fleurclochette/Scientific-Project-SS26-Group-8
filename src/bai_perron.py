@@ -275,7 +275,95 @@ class BaiPerron:
             np.cumsum(y)
         ])
 
-        self._cum_sq_sum = np.concatenate([
-            [0.0],
-            np.cumsum(y ** 2)
-        ])
+    def _best_additional_break(
+        self,
+        start,
+        end
+    ):
+        """
+        Find the best single additional breakpoint within
+        an existing regime.
+
+        Parameters
+        ----------
+        start : int
+            Inclusive start index of the regime.
+
+        end : int
+            Exclusive end index of the regime.
+
+        Returns
+        -------
+        tuple
+            best_break : int or None
+                Location of the breakpoint producing
+                the largest RSS reduction.
+
+            rss_no_break : float
+                RSS of the unsplit regime.
+
+            rss_with_break : float
+                Minimum RSS after introducing one break.
+
+            rss_reduction : float
+                Reduction in RSS due to the additional break.
+        """
+
+        rss_no_break = self._segment_rss(
+            start,
+            end
+        )
+
+        best_break = None
+        best_split_rss = np.inf
+
+        first_candidate = (
+            start + self.min_segment
+        )
+
+        last_candidate = (
+            end - self.min_segment
+        )
+
+        for break_idx in range(
+            first_candidate,
+            last_candidate + 1
+        ):
+
+            left_rss = self._segment_rss(
+                start,
+                break_idx
+            )
+
+            right_rss = self._segment_rss(
+                break_idx,
+                end
+            )
+
+            split_rss = (
+                left_rss + right_rss
+            )
+
+            if split_rss < best_split_rss:
+                best_split_rss = split_rss
+                best_break = break_idx
+
+        if best_break is None:
+            return (
+                None,
+                rss_no_break,
+                np.inf,
+                0.0
+            )
+
+        rss_reduction = (
+            rss_no_break
+            - best_split_rss
+        )
+
+        return (
+            best_break,
+            rss_no_break,
+            best_split_rss,
+            rss_reduction
+        )
