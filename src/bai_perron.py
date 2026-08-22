@@ -739,14 +739,14 @@ class BaiPerron:
 
             # Monte Carlo critical value
             critical_value = (
-                self._supf_monte_carlo_critical_value(
+                self._supf_block_bootstrap_critical_value(
                     start,
                     end,
                     n_simulations=n_simulations,
                     alpha=alpha,
+                    block_size=20,
                     random_state=(
-                        random_state
-                        + iteration
+                        random_state + iteration
                     )
                 )
             )
