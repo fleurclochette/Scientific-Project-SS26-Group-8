@@ -275,6 +275,11 @@ class BaiPerron:
             np.cumsum(y)
         ])
 
+        self._cum_sq_sum = np.concatenate([
+            [0.0],
+            np.cumsum(y ** 2)
+        ])
+
     def _best_additional_break(
         self,
         start,
