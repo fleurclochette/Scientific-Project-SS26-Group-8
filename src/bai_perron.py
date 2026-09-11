@@ -745,7 +745,7 @@ class BaiPerron:
                     end,
                     n_simulations=n_simulations,
                     alpha=alpha,
-                    block_size=block size,
+                    block_size=block_size,
                     random_state=(
                         random_state + iteration
                     )
