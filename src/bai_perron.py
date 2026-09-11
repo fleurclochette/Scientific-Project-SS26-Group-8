@@ -638,7 +638,7 @@ class BaiPerron:
         y,
         n_simulations=500,
         alpha=0.05,
-        block_size=20,
+        block_size=10,
         random_state=42
     ):
         """
@@ -781,7 +781,7 @@ class BaiPerron:
         end,
         n_simulations=500,
         alpha=0.05,
-        block_size=20,
+        block_size=10,
         random_state=42
     ):
         """
