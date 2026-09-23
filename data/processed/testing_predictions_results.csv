@@ -1,6 +1,0 @@
-Asset,PanicStart,RecoveryDays,Is_Severe_Crisis,Predicted_Severity,Severe_Probability
-IYR,2004-04-06,60,0,1,0.68276423
-IYR,2007-02-28,462,1,1,0.7027189
-IYR,2011-08-05,103,1,1,0.79162925
-IYR,2020-02-26,60,0,0,0.0945211
-IYR,2022-01-27,571,1,1,0.8245704
