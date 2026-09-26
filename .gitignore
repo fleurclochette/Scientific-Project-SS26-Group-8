@@ -1,10 +1,13 @@
+# Python cache files
 __pycache__/
 *.pyc
-__pycache__/
-*.pyc
-__pycache__/
-*.pyc
-__pycache__/
-*.pyc
-__pycache__/
-*.pyc
+
+# Jupyter temporary files
+.ipynb_checkpoints/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Environment files and secrets
+.env
