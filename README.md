@@ -23,10 +23,6 @@ cd Scientific-Project-SS26
 pip install -r requirements.txt
 ```
 
-The main analysis is contained in the `notebooks/` directory. To reproduce the analysis, run the main notebooks in numerical order, beginning with:
+The main analysis is contained in the `notebooks/` directory. To reproduce the analysis, please run the main notebooks in numerical order.
 
-`01_data_collection.ipynb`
 
-and continuing through:
-
-`07_unseen_asset_stress_test.ipynb`
