@@ -1,6 +1,7 @@
 # Scientific Project SS26 — Group 8
 
-**Financial Market Panic and Recovery**
+**Identifying Market Panic and Predicting Recovery Duration Across Financial Markets 
+**
 
 This repository contains the data files, and code files for the Scientific Project: Application of AI (Group 8).
 
