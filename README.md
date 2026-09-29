@@ -2,13 +2,13 @@
 
 **Financial Market Panic and Recovery**
 
-This repository contains the data files, code and notebooks for the Scientific Project: Application of AI (Group 8).
+This repository contains the data files, and code files for the Scientific Project: Application of AI (Group 8).
 
 ## Repository Structure
 
-- `notebooks/` — Main analysis notebooks, organized in numerical order from data collection through the final stress test.
-- `notebooks/methodological development/` — Preliminary and validation analyses used to develop the structural-break methodology, including S&P 500 preprocessing, simulated-data validation, and bootstrap block-length sensitivity analysis.
-- `src/` — Reusable source code, including the custom structural-break implementation.
+- `notebooks/` — Main analysis code, organized in numerical order from data collection through the final stress test.
+- `notebooks/methodological development/` — Preliminary and validation analyses used to develop the structural-break methodology, including S&P 500 preprocessing, simulated-data validation, and bootstrap block-length sensitivity analysis with S&P 500 data.
+- `src/` — Reusable source code. It includes the custom structural-break implementation.
 - `requirements.txt` — Python packages required to run the analysis.
 
 The methodological-development notebooks are retained for transparency and validation but are not part of the final analysis conducted.
